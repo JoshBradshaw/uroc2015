@@ -1,4 +1,5 @@
 from pprint import pprint
+import re
 
 def read_mdf(fp):
     metadata = {}
@@ -23,3 +24,5 @@ def read_mdf(fp):
 if __name__ == '__main__':
     spectrum, metadata = read_mdf('test.mgf')
     pprint(metadata)
+
+

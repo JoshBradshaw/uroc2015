@@ -19,10 +19,19 @@ def readFasta(filename):
 			dna += line
 
 	for key in proteins:
-		peptides[key] = re.findall(r'[RK](?!P)',proteins[key])
+		peptides[key] = sep_peptides(proteins[key])
 
 	print peptides.items()
 
+def sep_peptides(peptide): 
+    peptides = []
+    split_matches = re.finditer(r'[RK](?!P)', peptide)
+    prev_split_location = 0
+    for m in split_matches:
+        split_location = m.end()
+        peptides.append(peptide[prev_split_location:split_location])
+        prev_split_location = split_location
+    return peptides
 
 def main():
 	readFasta(sys.argv[1])
