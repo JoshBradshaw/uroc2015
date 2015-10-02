@@ -1,6 +1,9 @@
 import sys
+import re
+from collections import defaultdict
 
 proteins = {}
+peptides = defaultdict(list)
 
 def readFasta(filename):
 	inf = open(filename,'rU')
@@ -16,7 +19,9 @@ def readFasta(filename):
 			dna += line
 
 	for key in proteins:
-		print "key: " + key + " val: " + proteins[key]
+		peptides[key] = re.findall(r'[RK](?!P)',proteins[key])
+
+	print peptides.items()
 
 
 def main():
