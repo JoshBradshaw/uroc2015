@@ -65,7 +65,7 @@ def mass_yions(peptide_string):
     ion_mass = sum(fn_mass[peptide] for peptide in peptide_string)
     for ii in xrange(0, len(peptide_string)-1):
         ion_mass -= fn_mass[peptide_string[ii]]
-        y_ion_masses.append(ion_mass)
+        y_ion_masses.append(ion_mass + 19.018)
     return y_ion_masses
 
 def score_candidate(peptide_string,spectrum):
@@ -111,5 +111,4 @@ if __name__ == '__main__':
     outf = open('candidates.txt','w')
 
     for scan_number in chosen_candidate:
-	    outf.write(str(scan_number) + ' ' + chosen_candidate[scan_number])
-
+	    outf.write(str(scan_number) + ' ' + chosen_candidate[scan_number] + '\n')
