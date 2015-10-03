@@ -111,4 +111,8 @@ if __name__ == '__main__':
     outf = open('candidates.txt','w')
 
     for scan_number in chosen_candidate:
-	    outf.write(str(scan_number) + ' ' + chosen_candidate[scan_number] + '\n')
+        if candidates[scan_number]:
+
+            cands = ", ".join(candidates[scan_number])
+            outf.write("SCAN NUMBER: {} CHOSEN: {} -- {}\n".format(
+                scan_number, chosen_candidate[scan_number], cands))
