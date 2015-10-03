@@ -1,6 +1,16 @@
 from pprint import pprint
 import re
 
+def read_peptides(filename):
+	peptides = {}
+	f = open(filename,'rU')
+	for line in f:
+		line = line.strip()
+		key_val_pair = line.split(' ')
+		peptides[key_val_pair[0]] = key_val_pair[1]
+	
+	return peptides
+
 def read_mdf(fp):
     metadata = {}
     spectrums = []
@@ -35,17 +45,22 @@ def calc_charge(metadata):
 
 def calc_mass(metadata,charge):
 	pep_mass = metadata['PEPMASS']
-	mass = (pep_mass - 1.007)*z - 18.01
+	mass = (pep_mass - 1.007)*charge - 18.01
 	return mass
 	
 
 if __name__ == '__main__':
     spectrums = read_mdf('test.mgf')
-    pprint(spectrums[0][0])
-    pprint(spectrums[0][1])
-    z = calc_charge(metadata)
-    mass = calc_mass(metadata,z)
-    print mass
+    peptides = read_peptides('peptides.txt')
+    z_values = []
+    mass = []
+    for metadata, spectrum in spectrums:
+	    charge = calc_charge(metadata)
+	    z_values.append(charge)
+	    mass.append(calc_mass(metadata,charge))
+    
+    print len(mass)
+    print len(z_values)
 
 
 
