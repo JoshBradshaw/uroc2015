@@ -79,19 +79,16 @@ def score_candidate(peptide_string,spectrum):
     return score
 
 def choose_candidates(candidates,spectrum):
-    score = {}
-    for scan_number in candidates:
-        for candidate in candidates[scan_number]:
+    	score = {}
+        for candidate in candidates:
             score[candidate] = score_candidate(candidate, spectrum)
-    pprint(score)
-
-    max_score = -1
-    selected = ""
-    for candidate in candidates:
-        if score[candidate] > max_score:
-            max_score = score
-            selected = candidate
-    return candidate
+    	max_score = -1
+    	selected = ""
+    	for candidate in score:
+        	if score[candidate] > max_score:
+            		max_score = score
+            	selected = candidate
+    	return selected
 
 
 if __name__ == '__main__':
@@ -109,7 +106,10 @@ if __name__ == '__main__':
         scan_number = metadata['SCANS']
         mass.append(m)
         candidates[scan_number] = find_candidates(peptides,m)
-    chosen_candidate[scan_number] = choose_candidates(candidates,spectrum)
-    pprint(candidates)
+    	chosen_candidate[scan_number] = choose_candidates(candidates[scan_number],spectrum)
+    
+    outf = open('candidates.txt','w')
 
+    for scan_number in chosen_candidate:
+	    outf.write(str(scan_number) + ' ' + chosen_candidate[scan_number])
 
