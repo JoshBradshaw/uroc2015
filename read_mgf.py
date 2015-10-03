@@ -59,33 +59,39 @@ def find_candidates(peptides,mass):
     
     return candidates
 
-def mass_yions(candidate):
-	# TODO
-	masses = []
-	return masses
+def mass_yions(peptide_string):
+    # TODO
+    y_ion_masses = []
+    ion_mass = sum(fn_mass[peptide] for peptide in peptide_string)
+    for ii in xrange(0, len(peptide_string)-1):
+        ion_mass -= fn_mass[peptide_string[ii]]
+        y_ion_masses.append(ion_mass)
+    return y_ion_masses
 
-def score_candidate(candidate,spectrum):
-	y_ions = mass_yions(candidate)
-	score = 0
-	for mass,intensity in spectrum:
-		for y_mass in y_ions:
-			if abs(y_mass - mass) < 0.5:
-				score += 1
-				continue
-	return score
+def score_candidate(peptide_string,spectrum):
+    y_ions = mass_yions(peptide_string)
+    score = 0
+    for mass,intensity in spectrum:
+        for y_mass in y_ions:
+            if abs(y_mass - mass) < 0.5:
+                score += 1
+                continue
+    return score
 
 def choose_candidates(candidates,spectrum):
-	score = {}
-	for candidate in candidates:
-		score[candidate] = score_candidate(candidate,spectrum)
+    score = {}
+    for scan_number in candidates:
+        for candidate in candidates[scan_number]:
+            score[candidate] = score_candidate(candidate, spectrum)
+    pprint(score)
 
-	max_score = -1
-	selected = ""
-	for candidate in candidates:
-		if score[candidate] > max_score:
-			max_score = score
-			selected = candidate
-	return candidate
+    max_score = -1
+    selected = ""
+    for candidate in candidates:
+        if score[candidate] > max_score:
+            max_score = score
+            selected = candidate
+    return candidate
 
 
 if __name__ == '__main__':
@@ -103,7 +109,7 @@ if __name__ == '__main__':
         scan_number = metadata['SCANS']
         mass.append(m)
         candidates[scan_number] = find_candidates(peptides,m)
-	chosen_candidate[scan_number] = choose_candidates(candidates,spectrum)
+    chosen_candidate[scan_number] = choose_candidates(candidates,spectrum)
     pprint(candidates)
 
 
