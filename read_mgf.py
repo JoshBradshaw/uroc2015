@@ -1,5 +1,14 @@
+"""
+De Nova Peptide Sequencing
+
+Usage:
+  pepseq <spectrum_mgf_file> <protein_fasta_file>
+"""
+
+from read_fasta import readFasta
 from pprint import pprint
 import re
+from docopt import docopt
 
 def read_peptides(filename):
     peptides = {}
@@ -12,6 +21,7 @@ def read_peptides(filename):
     return peptides
 
 def read_mdf(fp):
+    """Parse the MGF file of protein spectrums"""
     metadata = {}
     spectrums = []
     with open(fp, 'r') as f:
@@ -64,16 +74,16 @@ def mass_yions(peptide_string):
     ion_mass = sum(fn_mass[peptide] for peptide in peptide_string)
     for ii in xrange(0, len(peptide_string)-1):
         ion_mass -= fn_mass[peptide_string[ii]]
-        y_ion_masses.append(ion_mass)
+        y_ion_masses.append(ion_mass + 19.018)
     return y_ion_masses
 
 def mass_bions(peptide_string):
-	b_ion_masses = []
-	ion_mass = sum(fn_mass[peptide] for peptide in peptide_string)
-	for ii in xrange(len(peptide_string)-1, 1, -1):
-		ion_mass -= fn_mass[peptide_string[ii]]
-		b_ion_masses.append(ion_mass)
-	return b_ion_masses
+    b_ion_masses = []
+    ion_mass = sum(fn_mass[peptide] for peptide in peptide_string)
+    for ii in xrange(len(peptide_string)-1, 1, -1):
+        ion_mass -= fn_mass[peptide_string[ii]]
+        b_ion_masses.append(ion_mass + 19.018)
+    return b_ion_masses
 
 def score_candidate(peptide_string,spectrum):
     y_ions = mass_yions(peptide_string)
@@ -86,31 +96,34 @@ def score_candidate(peptide_string,spectrum):
     return score
 
 def score_candidate_with_b(peptide_string,spectrum):
-	ions = mass_yions(peptide_string)
-	ions += mass_bions(peptide_string)
-	score = 0
-	for mass,intensity in spectrum:
-		for ion_mass in ions:
-			if abs(ion_mass - mass) < 0.5:
-				score += 1
-				continue
-	return score
+    ions = mass_yions(peptide_string)
+    ions += mass_bions(peptide_string)
+    score = 0
+    for mass,intensity in spectrum:
+        for ion_mass in ions:
+            if abs(ion_mass - mass) < 0.5:
+                score += 1
+                continue
+    return score
 
 def choose_candidates(candidates,spectrum):
-    	score = {}
+        score = {}
         for candidate in candidates:
             score[candidate] = score_candidate_with_b(candidate, spectrum)
-    	max_score = -1
-    	selected = ""
-    	for candidate in score:
-        	if score[candidate] > max_score:
-            		max_score = score
-            	selected = candidate
-    	return selected
+        max_score = -1
+        selected = ""
+        for candidate in score:
+            if score[candidate] > max_score:
+                    max_score = score
+                selected = candidate
+        return selected
 
 
 if __name__ == '__main__':
-    spectrums = read_mdf('test.mgf')
+    arguments = docopt(__doc__)
+    read_fasta(arguments["<protein_fasta_file>"])
+
+    spectrums = read_mdf(arguments["<spectrum_mgf_file>"])
     peptides = read_peptides('peptides.txt')
     candidates = {}
     chosen_candidate = {}
@@ -124,10 +137,10 @@ if __name__ == '__main__':
         scan_number = metadata['SCANS']
         mass.append(m)
         candidates[scan_number] = find_candidates(peptides,m)
-    	chosen_candidate[scan_number] = choose_candidates(candidates[scan_number],spectrum)
+        chosen_candidate[scan_number] = choose_candidates(candidates[scan_number],spectrum)
     
-    outf = open('candidates_with_b.txt','w')
+    outf = open('spectrum-protein-matches.txt','w')
 
     for scan_number in chosen_candidate:
-	    outf.write(str(scan_number) + ' ' + chosen_candidate[scan_number] + '\n')
+        outf.write(str(scan_number) + ' ' + chosen_candidate[scan_number] + '\n')
 
