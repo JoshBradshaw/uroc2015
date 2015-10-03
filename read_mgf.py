@@ -60,13 +60,20 @@ def find_candidates(peptides,mass):
     return candidates
 
 def mass_yions(peptide_string):
-    # TODO
     y_ion_masses = []
     ion_mass = sum(fn_mass[peptide] for peptide in peptide_string)
     for ii in xrange(0, len(peptide_string)-1):
         ion_mass -= fn_mass[peptide_string[ii]]
         y_ion_masses.append(ion_mass)
     return y_ion_masses
+
+def mass_bions(peptide_string):
+	b_ion_masses = []
+	ion_mass = sum(fn_mass[peptide] for peptide in peptide_string)
+	for ii in xrange(len(peptide_string)-1, 1, -1):
+		ion_mass -= fn_mass[peptide_string[ii]]
+		b_ion_masses.append(ion_mass)
+	return b_ion_masses
 
 def score_candidate(peptide_string,spectrum):
     y_ions = mass_yions(peptide_string)
@@ -78,10 +85,21 @@ def score_candidate(peptide_string,spectrum):
                 continue
     return score
 
+def score_candidate_with_b(peptide_string,spectrum):
+	ions = mass_yions(peptide_string)
+	ions += mass_bions(peptide_string)
+	score = 0
+	for mass,intensity in spectrum:
+		for ion_mass in ions:
+			if abs(ion_mass - mass) < 0.5:
+				score += 1
+				continue
+	return score
+
 def choose_candidates(candidates,spectrum):
     	score = {}
         for candidate in candidates:
-            score[candidate] = score_candidate(candidate, spectrum)
+            score[candidate] = score_candidate_with_b(candidate, spectrum)
     	max_score = -1
     	selected = ""
     	for candidate in score:
@@ -108,8 +126,8 @@ if __name__ == '__main__':
         candidates[scan_number] = find_candidates(peptides,m)
     	chosen_candidate[scan_number] = choose_candidates(candidates[scan_number],spectrum)
     
-    outf = open('candidates.txt','w')
+    outf = open('candidates_with_b.txt','w')
 
     for scan_number in chosen_candidate:
-	    outf.write(str(scan_number) + ' ' + chosen_candidate[scan_number])
+	    outf.write(str(scan_number) + ' ' + chosen_candidate[scan_number] + '\n')
 
