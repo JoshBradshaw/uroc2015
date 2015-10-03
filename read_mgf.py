@@ -7,7 +7,7 @@ def read_peptides(filename):
 	for line in f:
 		line = line.strip()
 		key_val_pair = line.split(' ')
-		peptides[key_val_pair[0]] = key_val_pair[1]
+		peptides[key_val_pair[0]] = float(key_val_pair[1])
 	
 	return peptides
 
@@ -47,20 +47,30 @@ def calc_mass(metadata,charge):
 	pep_mass = metadata['PEPMASS']
 	mass = (pep_mass - 1.007)*charge - 18.01
 	return mass
+
+def find_candidates(peptides,mass):
+	candidates = []
+	for peptide in peptides:
+		if abs(peptides[peptide] - mass) < 0.5 :
+			candidates.append(peptide)
 	
+	return candidates
+
 
 if __name__ == '__main__':
     spectrums = read_mdf('test.mgf')
     peptides = read_peptides('peptides.txt')
     z_values = []
     mass = []
+    count  = 0
     for metadata, spectrum in spectrums:
 	    charge = calc_charge(metadata)
 	    z_values.append(charge)
-	    mass.append(calc_mass(metadata,charge))
-    
-    print len(mass)
-    print len(z_values)
-
+	    m = calc_mass(metadata,charge)
+	    mass.append(m)
+	    candidates = find_candidates(peptides,m)
+	    if candidates == []:
+		    count+=1
+    print count
 
 
