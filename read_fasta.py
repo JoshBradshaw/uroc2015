@@ -14,6 +14,7 @@ def readFasta(filename):
 	name = ""
 	dna = ""
 	for line in inf:
+		line = line.strip()
 		if line[0] == '>':
 			if name != "" :
 				proteins[name] = dna
@@ -28,7 +29,7 @@ def readFasta(filename):
 
 	calc_peptides_mass()
 
-	outf = open('peptides.txt','w')
+	outf = open('peptides_small.txt','w')
 
 	for peptide in peptides_mass:
 		outf.write( peptide + " " + str(peptides_mass[peptide]) + "\n")
@@ -42,7 +43,8 @@ def mass(peptide):
 def calc_peptides_mass():
 	for key in peptides:
 		for peptide in peptides[key]:
-			peptides_mass[peptide] = mass(peptide)
+			if not any(ic in peptide for ic in "XUZB"):
+				peptides_mass[peptide] = mass(peptide)
 
 def sep_peptides(peptide): 
     peptides = []
