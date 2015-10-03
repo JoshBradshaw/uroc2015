@@ -21,6 +21,7 @@ def readFasta(filename):
 			dna = ""
 		else : 
 			dna += line
+	proteins[name] = dna
 
 	for key in proteins:
 		peptides[key] = sep_peptides(proteins[key])
