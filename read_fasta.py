@@ -28,8 +28,10 @@ def readFasta(filename):
 
 	calc_peptides_mass()
 
+	outf = open('peptides.txt','w')
+
 	for peptide in peptides_mass:
-		print "peptide: " + peptide +  " mass: " + str(peptides_mass[peptide]) + "\n"
+		outf.write( peptide + " " + str(peptides_mass[peptide]) + "\n")
 
 def mass(peptide):
 	total_mass = 0.0
