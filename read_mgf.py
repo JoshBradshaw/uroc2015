@@ -1,7 +1,17 @@
+"""
+De Nova Sequencing
+
+Usage:
+  protein_seq <fasta> <mgf>
+"""
+
 from __future__ import division
 from pprint import pprint
 import math
 import re
+
+from read_fasta import readFasta
+from docopt import docopt
 
 def read_peptides(filename):
     peptides = {}
@@ -70,62 +80,61 @@ def mass_yions(peptide_string):
     return y_ion_masses
 
 def mass_bions(peptide_string):
-	b_ion_masses = []
-	ion_mass = sum(fn_mass[peptide] for peptide in peptide_string)
-	for ii in xrange(len(peptide_string)-1, 1, -1):
-		ion_mass -= fn_mass[peptide_string[ii]]
-		b_ion_masses.append(ion_mass + 1.008)
-	return b_ion_masses
+    b_ion_masses = []
+    ion_mass = sum(fn_mass[peptide] for peptide in peptide_string)
+    for ii in xrange(len(peptide_string)-1, 1, -1):
+        ion_mass -= fn_mass[peptide_string[ii]]
+        b_ion_masses.append(ion_mass + 1.008)
+    return b_ion_masses
 
 def score_candidate(peptide_string,spectrum):
     y_ions = mass_yions(peptide_string)
     score = 0
     max_intensity = 0.0
     for mass,intensity in spectrum:
-	    if intensity > max_intensity:
-		    max_intensity = intensity
+        if intensity > max_intensity:
+            max_intensity = intensity
     for mass,intensity in spectrum:
         for y_mass in y_ions:
             if abs(y_mass - mass) < 0.5:
                 #score += 1
-		#print math.log( 1 + 100*intensity/max_intensity)
-		score += math.log(1+ 100*intensity/max_intensity)
+        #print math.log( 1 + 100*intensity/max_intensity)
+        score += math.log(1+ 100*intensity/max_intensity)
                 continue
 
     return score
 
 def score_candidate_with_b(peptide_string,spectrum):
-	ions = mass_yions(peptide_string)
-	ions += mass_bions(peptide_string)
-	score = 0
-	max_intensity = 0.0
-	for mass,intensity in spectrum:
-		if intensity > max_intensity:
-			max_intensity = intensity
-	for mass,intensity in spectrum:
-		for ion_mass in ions:
-			if abs(ion_mass - mass) < 0.5:
-				score += math.log(1 + 100*intensity/max_intensity)
-				continue
-	return score
+    ions = mass_yions(peptide_string)
+    ions += mass_bions(peptide_string)
+    score = 0
+    max_intensity = 0.0
+    for mass,intensity in spectrum:
+        if intensity > max_intensity:
+            max_intensity = intensity
+    for mass,intensity in spectrum:
+        for ion_mass in ions:
+            if abs(ion_mass - mass) < 0.5:
+                score += math.log(1 + 100*intensity/max_intensity)
+                continue
+    return score
 
 def choose_candidates(candidates,spectrum):
-    	score = {}
+        score = {}
         for candidate in candidates:
             score[candidate] = score_candidate(candidate, spectrum)
-    	max_score = -1
-    	selected = ""
-	#print score['CCTESLVNR']
-    	for candidate in candidates:
-        	if score[candidate] > max_score:
-            		max_score = score[candidate]
-            		selected = candidate
-    	#print score[selected]
-	return selected
-
+        max_score = -1
+        selected = ""
+        for candidate in candidates:
+            if score[candidate] > max_score:
+                    max_score = score[candidate]
+                    selected = candidate
+    return selected
 
 if __name__ == '__main__':
-    spectrums = read_mdf('test.mgf')
+    arguments = docopt(__doc__)
+    readFasta(arguments['<fasta>'])
+    spectrums = read_mdf(arguments['<mgf>'])
     peptides = read_peptides('peptides.txt')
     candidates = {}
     chosen_candidate = {}
@@ -139,14 +148,9 @@ if __name__ == '__main__':
         scan_number = metadata['SCANS']
         mass.append(m)
         candidates[scan_number] = find_candidates(peptides,m)
-    	chosen_candidate[scan_number] = choose_candidates(candidates[scan_number],spectrum)
-		#print m
-		#print chosen_candidate[399]
-		#if 'CCAAADPHECYAK' in candidates[scan_number]:
-		#	print "got it"
+        chosen_candidate[scan_number] = choose_candidates(candidates[scan_number],spectrum)
     
-    outf = open('candidates_big.txt','w')
-
-    for scan_number in chosen_candidate:
-	    outf.write(str(scan_number) + ' ' + chosen_candidate[scan_number] + '\n')
+    with open('candidates_big.txt','w') as f:
+        for scan_number in chosen_candidate:
+            f.write(str(scan_number) + ' ' + chosen_candidate[scan_number] + '\n')
 
