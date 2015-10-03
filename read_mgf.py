@@ -97,11 +97,8 @@ def score_candidate(peptide_string,spectrum):
     for mass,intensity in spectrum:
         for y_mass in y_ions:
             if abs(y_mass - mass) < 0.5:
-                #score += 1
-        #print math.log( 1 + 100*intensity/max_intensity)
-        score += math.log(1+ 100*intensity/max_intensity)
+                score += math.log(1+ 100*intensity/max_intensity)
                 continue
-
     return score
 
 def score_candidate_with_b(peptide_string,spectrum):
@@ -120,15 +117,15 @@ def score_candidate_with_b(peptide_string,spectrum):
     return score
 
 def choose_candidates(candidates,spectrum):
-        score = {}
-        for candidate in candidates:
-            score[candidate] = score_candidate(candidate, spectrum)
-        max_score = -1
-        selected = ""
-        for candidate in candidates:
-            if score[candidate] > max_score:
-                    max_score = score[candidate]
-                    selected = candidate
+    score = {}
+    for candidate in candidates:
+        score[candidate] = score_candidate(candidate, spectrum)
+    max_score = -1
+    selected = ""
+    for candidate in candidates:
+        if score[candidate] > max_score:
+                max_score = score[candidate]
+                selected = candidate
     return selected
 
 if __name__ == '__main__':
