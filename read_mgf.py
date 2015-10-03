@@ -59,11 +59,40 @@ def find_candidates(peptides,mass):
     
     return candidates
 
+def mass_yions(candidate):
+	# TODO
+	masses = []
+	return masses
+
+def score_candidate(candidate,spectrum):
+	y_ions = mass_yions(candidate)
+	score = 0
+	for mass,intensity in spectrum:
+		for y_mass in y_ions:
+			if abs(y_mass - mass) < 0.5:
+				score += 1
+				continue
+	return score
+
+def choose_candidates(candidates,spectrum):
+	score = {}
+	for candidate in candidates:
+		score[candidate] = score_candidate(candidate,spectrum)
+
+	max_score = -1
+	selected = ""
+	for candidate in candidates:
+		if score[candidate] > max_score:
+			max_score = score
+			selected = candidate
+	return candidate
+
 
 if __name__ == '__main__':
     spectrums = read_mdf('test.mgf')
     peptides = read_peptides('peptides.txt')
     candidates = {}
+    chosen_candidate = {}
     z_values = []
     mass = []
     count  = 0
@@ -74,6 +103,7 @@ if __name__ == '__main__':
         scan_number = metadata['SCANS']
         mass.append(m)
         candidates[scan_number] = find_candidates(peptides,m)
+	chosen_candidate[scan_number] = choose_candidates(candidates,spectrum)
     pprint(candidates)
 
 
