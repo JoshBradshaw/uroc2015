@@ -6,22 +6,22 @@ proteins = {}
 peptides = defaultdict(list)
 
 def readFasta(filename):
-	inf = open(filename,'rU')
-	name = ""
-	dna = ""
-	for line in inf:
-		if line[0] == '>':
-			if name != "" :
-				proteins[name] = dna
-			name = line[1:]
-			dna = ""
-		else : 
-			dna += line
+    inf = open(filename,'rU')
+    name = ""
+    dna = ""
+    for line in inf:
+        if line[0] == '>':
+            if name != "" :
+                proteins[name] = dna
+            name = line[1:]
+            dna = ""
+        else : 
+            dna += line
 
-	for key in proteins:
-		peptides[key] = sep_peptides(proteins[key])
+    for key in proteins:
+        peptides[key] = sep_peptides(proteins[key])
 
-	print peptides.items()
+    print peptides.items()
 
 def sep_peptides(peptide): 
     peptides = []
@@ -34,7 +34,7 @@ def sep_peptides(peptide):
     return peptides
 
 def main():
-	readFasta(sys.argv[1])
+    readFasta(sys.argv[1])
 
 if __name__ == '__main__':
-	main()
+    main()
